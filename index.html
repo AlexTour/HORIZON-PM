@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Horizon Europe Projects Tracker</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f7f9fc;
+      color: #333;
+      max-width: 800px;
+      margin: 2rem auto;
+      padding: 1rem;
+    }
+    h1 { text-align: center; }
+    .project {
+      background: white;
+      border-radius: 12px;
+      padding: 1rem;
+      margin: 1rem 0;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .progress {
+      margin-top: 0.5rem;
+      height: 12px;
+      background: #e0e0e0;
+      border-radius: 6px;
+      overflow: hidden;
+    }
+    .progress-bar {
+      height: 100%;
+      background: #0077ff;
+      transition: width 0.5s;
+    }
+  </style>
+</head>
+<body>
+  <h1>EU Projects Timeline</h1>
+  <div id="projects"></div>
+
+  <script>
+    const projects = [
+      {
+        name: "THESEUS",
+        start: "2024-12-01",
+        end: "2029-11-30"
+      },
+      {
+        name: "RURBANIVE",
+        start: "2024-01-01",
+        end: "2027-12-31"
+      },
+      {
+        name: "THETIDA",
+        start: "2023-05-01",
+        end: "2026-10-31"
+      },
+      {
+        name: "DEXPLORE",
+        start: "2024-10-01",
+        end: "2027-09-30"
+      },
+      {
+        name: "CARDIMED",
+        start: "2023-09-01",
+        end: "2028-02-29"
+      }
+    ];
+
+    function monthsBetween(start, end) {
+      return (end.getFullYear() - start.getFullYear()) * 12 + (end.getMonth() - start.getMonth()) + 1;
+    }
+
+    function getCurrentMonth(start) {
+      const today = new Date();
+      return (today.getFullYear() - start.getFullYear()) * 12 + (today.getMonth() - start.getMonth()) + 1;
+    }
+
+    const container = document.getElementById("projects");
+
+    // 🔹 Sort projects by start date (earliest first)
+    projects.sort((a, b) => new Date(a.start) - new Date(b.start));
+
+    projects.forEach(p => {
+      const start = new Date(p.start);
+      const end = new Date(p.end);
+
+      const duration = monthsBetween(start, end);
+      const currentMonth = Math.min(getCurrentMonth(start), duration);
+      const percent = Math.min(100, (currentMonth / duration) * 100).toFixed(1);
+
+      const div = document.createElement("div");
+      div.className = "project";
+      div.innerHTML = `
+        <h2>${p.name}</h2>
+        <p><strong>Start:</strong> ${start.toDateString()}<br>
+           <strong>End:</strong> ${end.toDateString()}</p>
+        <p>📅 Current: Month ${currentMonth} of ${duration} (${percent}%)</p>
+        <div class="progress"><div class="progress-bar" style="width:${percent}%"></div></div>
+      `;
+      container.appendChild(div);
+    });
+  </script>
+</body>
+</html>

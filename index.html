@@ -2,74 +2,111 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>EU Projects Tracker</title>
+  <title>HORIZON EU Projects Tracker</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      background: #f7f9fc;
       color: #333;
-      max-width: 800px;
-      margin: 2rem auto;
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+      position: relative;
+      min-height: 100vh;
+    }
+
+    /* Canvas background */
+    #bgCanvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: -1;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+    }
+
+    header {
+      display: flex;
+      align-items: center;
       padding: 1rem;
     }
-    h1 { text-align: center; }
+    header img {
+      height: 60px;
+      width: auto;
+      margin-right: 1rem;
+      background: white; /* for logo with white border */
+      padding: 4px;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 2rem;
+      color: white;
+      margin: 1rem 0;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 1rem auto 3rem;
+      padding: 1rem;
+    }
+
     .project {
-      background: white;
+      background: rgba(255, 255, 255, 0.9);
       border-radius: 12px;
       padding: 1rem;
-      margin: 1rem 0;
+      margin: 1.2rem 0;
       box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
+
+    .current-month {
+      font-size: 1rem;
+      margin: 0.5rem 0;
+    }
+
+    .current-month strong {
+      font-size: 1.4rem;
+      font-weight: bold;
+      color: #005bbb;
+    }
+
     .progress {
       margin-top: 0.5rem;
       height: 12px;
-      background: #e0e0e0;
+      background: #dfe6ec;
       border-radius: 6px;
       overflow: hidden;
     }
     .progress-bar {
       height: 100%;
-      background: #0077ff;
+      background: #005bbb;
       transition: width 0.5s;
     }
   </style>
 </head>
 <body>
+  <!-- Animated background -->
+  <canvas id="bgCanvas"></canvas>
+
+  <header>
+    <!-- Replace "logo.png" with your actual logo path -->
+    <img src="isense.png" alt="Logo">
+  </header>
+
   <h1>EU Projects Timeline</h1>
-  <div id="projects"></div>
+
+  <div class="container" id="projects"></div>
 
   <script>
     const projects = [
-      {
-        name: "THESEUS",
-        start: "2024-12-01",
-        end: "2029-11-30"
-      },
-      {
-        name: "RURBANIVE",
-        start: "2024-01-01",
-        end: "2027-12-31"
-      },
-      {
-        name: "THETIDA",
-        start: "2023-05-01",
-        end: "2026-10-31"
-      },
-      {
-        name: "DEXPLORE",
-        start: "2024-10-01",
-        end: "2027-09-30"
-      },
-      {
-        name: "CARDIMED",
-        start: "2023-09-01",
-        end: "2028-02-29"
-      },
-      {
-        name: "PALIMPSEST",
-        start: "2023-03-01",
-        end: "2026-02-28"
-      }
+      { name: "PALIMPSEST", start: "2023-03-01", end: "2026-02-28" },
+      { name: "THETIDA", start: "2023-05-01", end: "2026-10-31" },
+      { name: "CARDIMED", start: "2023-09-01", end: "2028-02-29" },
+      { name: "RURBANIVE", start: "2024-01-01", end: "2027-12-31" },
+      { name: "DEXPLORE", start: "2024-10-01", end: "2027-09-30" },
+      { name: "THESEUS", start: "2024-12-01", end: "2029-11-30" }
     ];
 
     function monthsBetween(start, end) {
@@ -83,13 +120,12 @@
 
     const container = document.getElementById("projects");
 
-    // 🔹 Sort projects by start date (earliest first)
+    // 🔹 Sort projects by start date
     projects.sort((a, b) => new Date(a.start) - new Date(b.start));
 
     projects.forEach(p => {
       const start = new Date(p.start);
       const end = new Date(p.end);
-
       const duration = monthsBetween(start, end);
       const currentMonth = Math.min(getCurrentMonth(start), duration);
       const percent = Math.min(100, (currentMonth / duration) * 100).toFixed(1);
@@ -100,11 +136,43 @@
         <h2>${p.name}</h2>
         <p><strong>Start:</strong> ${start.toDateString()}<br>
            <strong>End:</strong> ${end.toDateString()}</p>
-        <p>📅 Current: Month ${currentMonth} of ${duration} (${percent}%)</p>
+        <p class="current-month">📅 Current: Month <strong>${currentMonth}</strong> of ${duration} (${percent}%)</p>
         <div class="progress"><div class="progress-bar" style="width:${percent}%"></div></div>
       `;
       container.appendChild(div);
     });
+
+    // 🎨 Animated smooth waves background
+    const canvas = document.getElementById("bgCanvas");
+    const ctx = canvas.getContext("2d");
+    let width, height, time = 0;
+    function resize() {
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+    }
+    window.addEventListener("resize", resize);
+    resize();
+
+    function drawWave(amplitude, wavelength, speed, color, yOffset) {
+      ctx.beginPath();
+      for (let x = 0; x <= width; x++) {
+        const y = Math.sin((x + time * speed) / wavelength) * amplitude + height / 2 + yOffset;
+        ctx.lineTo(x, y);
+      }
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+    }
+
+    function animate() {
+      ctx.clearRect(0, 0, width, height);
+      drawWave(40, 200, 2, "rgba(255,255,255,0.2)", -50);
+      drawWave(60, 300, 1.2, "rgba(255,255,255,0.15)", 30);
+      drawWave(30, 150, 3, "rgba(255,255,255,0.25)", -80);
+      time += 1.5;
+      requestAnimationFrame(animate);
+    }
+    animate();
   </script>
 </body>
 </html>
